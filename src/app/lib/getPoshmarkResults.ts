@@ -1,6 +1,7 @@
 import axios from "axios";
 
 export async function getPoshmarkResults(query: string) {
+  console.error("Being called");
   const url = "https://poshmark.com/vm-rest/posts";
   const params = {
     request: JSON.stringify({

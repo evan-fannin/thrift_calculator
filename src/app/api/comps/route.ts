@@ -13,7 +13,13 @@ export async function GET(request: Request) {
     const data = await getPoshmarkResults(query);
     const results = data.data;
 
-    return Response.json({ data: results });
+    const response = NextResponse.json({ data: results });
+    response.headers.set(
+      "Cache-Control",
+      "public, s-maxage=60, stale-while-revalidate"
+    );
+
+    return response;
   } catch (error) {
     console.error("Error fetching Poshmark results: ", error);
     return NextResponse.json(
