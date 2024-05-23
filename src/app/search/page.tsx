@@ -1,19 +1,9 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
-
-interface PoshmarkResult {
-  id: number;
-  title: string;
-  size: string;
-  price: string;
-  cover_shot: {
-    url_small: string;
-  };
-}
+import { PoshmarkResult } from "../types";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
@@ -94,7 +84,26 @@ export default function SearchResults() {
     setShowSummarizeButton(true);
   };
 
-  return (
+  const getDayDifference = (postedAt: string, soldAt: string) => {
+    const date1 = new Date(postedAt);
+    const date2 = new Date(soldAt);
+
+    // Calculate the difference in time (milliseconds)
+    const differenceInTime = Math.abs(date2.getTime() - date1.getTime());
+
+    // Convert the difference in time to days
+    const differenceInDays = Math.ceil(
+      differenceInTime / (1000 * 60 * 60 * 24)
+    );
+
+    return differenceInDays;
+  };
+
+  return !results.length ? (
+    <main className="min-h-screen bg-gray-50 py-8">
+      <div className="container mx-auto px-4">No Results</div>
+    </main>
+  ) : (
     <>
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
@@ -124,6 +133,10 @@ export default function SearchResults() {
                 </h3>
                 <p className="text-gray-600 mb-1">Size: {result.size}</p>
                 <p className="text-gray-600">Price: {result.price}</p>
+                <p className="text-gray-600">
+                  Days on market:{" "}
+                  {getDayDifference(result.postedAt, result.soldAt)}
+                </p>
               </div>
             ))}
           </div>
