@@ -8,6 +8,22 @@ interface PoshmarkAPIError {
   statusCode: number;
 }
 
+interface PoshmarkAPIResult {
+  id: string;
+  title: string;
+  size: string;
+  price: string;
+  cover_shot: {
+    url_small: string;
+  };
+  first_available_at: string;
+  first_published_at: string;
+  inventory: {
+    last_unit_reserved_at: string;
+    status_changed_at: string;
+  };
+}
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query");
@@ -31,14 +47,14 @@ export async function GET(request: Request) {
       }
     }
 
-    const results = data.data;
+    const results: PoshmarkAPIResult[] = data.data;
 
     if (!results) {
       throw new Error("No results field exists.");
     }
 
     const response = NextResponse.json({
-      data: results.map((result: PoshmarkResult) => ({
+      data: results.map((result) => ({
         id: result.id,
         title: result.title,
         size: result.size,
