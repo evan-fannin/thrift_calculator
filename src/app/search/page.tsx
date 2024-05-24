@@ -4,6 +4,9 @@ import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { PoshmarkResult } from "../types";
+import SummaryModal from "./SummaryModal";
+import { getDayDifference } from "./utils";
+import FancySpinner from "../components/FancySpinner";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
@@ -12,9 +15,10 @@ export default function SearchResults() {
   const [results, setResults] = useState<PoshmarkResult[]>([]);
   const [selectedItems, setSelectedItems] = useState<PoshmarkResult[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [showSummarizeButton, setShowSummarizeButton] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [showSummarizeButton, setShowSummarizeButton] = useState(true);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
-  const [userItemCost, setUserItemCost] = useState("");
+  const [buttonText, setButtonText] = useState("Select items to analyze");
 
   useEffect(() => {
     if (query) {
@@ -39,6 +43,7 @@ export default function SearchResults() {
         }
         const data = await response.json();
         setResults(data.data);
+        setLoading(false);
       } catch (error) {
         setError("Error fetching Poshmark results. Please try again.");
         console.error("Error fetching Poshmark results: ", error);
@@ -50,9 +55,9 @@ export default function SearchResults() {
 
   useEffect(() => {
     if (selectedItems.length > 0) {
-      setShowSummarizeButton(true);
+      setButtonText("Analyze");
     } else {
-      setShowSummarizeButton(false);
+      setButtonText("Select items to analyze");
     }
   }, [selectedItems]);
 
@@ -66,14 +71,6 @@ export default function SearchResults() {
     }
   };
 
-  const calculateAveragePrice = () => {
-    const totalPrice = selectedItems.reduce((sum, item) => {
-      const price = parseFloat(item.price);
-      return sum + price;
-    }, 0);
-    return (totalPrice / selectedItems.length).toFixed(2);
-  };
-
   const handleSummarizeClick = () => {
     setShowSummarizeButton(false);
     setShowSummaryModal(true);
@@ -84,22 +81,9 @@ export default function SearchResults() {
     setShowSummarizeButton(true);
   };
 
-  const getDayDifference = (postedAt: string, soldAt: string) => {
-    const date1 = new Date(postedAt);
-    const date2 = new Date(soldAt);
-
-    // Calculate the difference in time (milliseconds)
-    const differenceInTime = Math.abs(date2.getTime() - date1.getTime());
-
-    // Convert the difference in time to days
-    const differenceInDays = Math.ceil(
-      differenceInTime / (1000 * 60 * 60 * 24)
-    );
-
-    return differenceInDays;
-  };
-
-  return !results.length ? (
+  return loading ? (
+    <FancySpinner />
+  ) : !results.length ? (
     <main className="min-h-screen bg-gray-50 py-8">
       <div className="container mx-auto px-4">No Results</div>
     </main>
@@ -144,68 +128,22 @@ export default function SearchResults() {
         {showSummarizeButton && (
           <button
             onClick={handleSummarizeClick}
-            className="fixed bottom-4 left-1/2 transform -translate-x-1/2 bg-blue-500 text-white w-3/4 sm:w-64 h-16 flex items-center justify-center rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold"
+            className={`fixed bottom-4 left-1/2 transform -translate-x-1/2 w-3/4 sm:w-64 h-16 flex items-center justify-center rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold ${
+              selectedItems.length < 1
+                ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+            disabled={selectedItems.length < 1}
           >
-            Summarize
+            {buttonText}
           </button>
         )}
       </main>
       {showSummaryModal && (
-        <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-50">
-          <div className="bg-white rounded-lg shadow-lg p-4 sm:p-6 w-11/12 sm:w-3/4 md:w-2/3 lg:w-1/2">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Summary</h2>
-            <p className="text-gray-600 mb-4">
-              Average Price: ${calculateAveragePrice()}
-            </p>
-            <div className="mb-4">
-              <label
-                htmlFor="userItemCost"
-                className="block text-gray-700 font-semibold mb-2"
-              >
-                Your Item Cost:
-              </label>
-              <input
-                type="number"
-                id="userItemCost"
-                value={userItemCost}
-                onChange={(e) => setUserItemCost(e.target.value)}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-            <div className="mb-6">
-              <div className="bg-gray-100 p-4 rounded-md mb-4">
-                <p className="text-sm font-semibold mb-2">
-                  item_sale_price - platform_fee - item_cost = profit
-                </p>
-                <p className="text-gray-600 mb-2 text-sm">
-                  item_sale_price = $
-                  {(parseFloat(calculateAveragePrice()) * 0.8).toFixed(2)}
-                </p>
-                <p className="text-gray-600 mb-2 text-sm">
-                  platform_fee = $
-                  {(parseFloat(calculateAveragePrice()) * 0.2).toFixed(2)}
-                </p>
-                <p className="text-gray-600 mb-2 text-sm">
-                  item_cost = ${userItemCost || "0"}
-                </p>
-              </div>
-              <p className="text-lg sm:text-xl font-bold">
-                Profit: $
-                {(
-                  parseFloat(calculateAveragePrice()) * 0.8 -
-                  parseFloat(calculateAveragePrice()) * 0.2 -
-                  parseFloat(userItemCost || "0")
-                ).toFixed(2)}
-              </p>
-            </div>
-            <button
-              onClick={handleCloseSummaryModal}
-              className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold w-full sm:w-auto"
-            >
-              Close
-            </button>
-          </div>
-        </div>
+        <SummaryModal
+          handleCloseSummaryModal={handleCloseSummaryModal}
+          selectedItems={selectedItems}
+        />
       )}
     </>
   );

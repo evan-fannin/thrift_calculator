@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server";
 import { getPoshmarkResults } from "../../lib/getPoshmarkResults";
-import { PoshmarkResult } from "@/app/types";
 
 interface PoshmarkAPIError {
   errorType: string;
@@ -62,10 +61,8 @@ export async function GET(request: Request) {
         cover_shot: {
           url_small: result.cover_shot.url_small,
         },
-        postedAt: result.first_available_at || result.first_published_at,
-        soldAt:
-          result.inventory.last_unit_reserved_at ||
-          result.inventory.status_changed_at,
+        postedAt: result.first_published_at,
+        soldAt: result.inventory.status_changed_at,
       })),
     });
 
