@@ -13,6 +13,7 @@ import { PoshmarkResult } from "../types";
 import SummaryModal from "./SummaryModal";
 import { getDayDifference } from "./utils";
 import FancySpinner from "../components/FancySpinner";
+import PoshResult from "./PoshResult";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
@@ -25,6 +26,7 @@ export default function SearchResults() {
   const [showSummarizeButton, setShowSummarizeButton] = useState(true);
   const [showSummaryModal, setShowSummaryModal] = useState(false);
   const [buttonText, setButtonText] = useState("Select items to analyze");
+  const [allSelected, setAllSelected] = useState(false);
 
   useEffect(() => {
     if (query) {
@@ -77,6 +79,16 @@ export default function SearchResults() {
     }
   };
 
+  const handleSelectAllClick = () => {
+    if (allSelected) {
+      setSelectedItems([]);
+      setAllSelected(false);
+    } else {
+      setSelectedItems([...results]);
+      setAllSelected(true);
+    }
+  };
+
   const handleSummarizeClick = () => {
     setShowSummarizeButton(false);
     setShowSummaryModal(true);
@@ -97,38 +109,20 @@ export default function SearchResults() {
     <>
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
+          <button
+            onClick={handleSelectAllClick}
+            className="mb-4 px-4 py-2 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:w-auto w-full"
+          >
+            {allSelected ? "Deselect All" : "Select All"}
+          </button>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
             {results.map((result) => (
-              <div
+              <PoshResult
                 key={result.id}
-                className={`bg-white rounded-lg shadow-lg p-4 cursor-pointer transition-transform transform hover:scale-105 ${
-                  selectedItems.some((item) => item.id === result.id)
-                    ? "ring-2 ring-blue-500"
-                    : ""
-                }`}
-                onClick={() => handleItemClick(result)}
-                aria-selected={selectedItems.some(
-                  (item) => item.id === result.id
-                )}
-              >
-                <Image
-                  src={result["cover_shot"]["url_small"]}
-                  alt={result.title}
-                  width={200}
-                  height={200}
-                  className="mx-auto mb-4 rounded-md"
-                  unoptimized
-                />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  {result.title}
-                </h3>
-                <p className="text-gray-600 mb-1">Size: {result.size}</p>
-                <p className="text-gray-600">Price: {result.price}</p>
-                <p className="text-gray-600">
-                  Days on market:{" "}
-                  {getDayDifference(result.postedAt, result.soldAt)}
-                </p>
-              </div>
+                result={result}
+                selectedItems={selectedItems}
+                handleItemClick={handleItemClick}
+              />
             ))}
           </div>
         </div>

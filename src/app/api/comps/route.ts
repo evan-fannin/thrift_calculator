@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPoshmarkResults } from "../../lib/getPoshmarkResults";
+import { ColorObject } from "@/app/types";
 
 interface PoshmarkAPIError {
   errorType: string;
@@ -21,6 +22,7 @@ interface PoshmarkAPIResult {
     last_unit_reserved_at: string;
     status_changed_at: string;
   };
+  colors: ColorObject[];
 }
 
 export async function GET(request: Request) {
@@ -63,6 +65,7 @@ export async function GET(request: Request) {
         },
         postedAt: result.first_published_at,
         soldAt: result.inventory.status_changed_at,
+        colors: result.colors,
       })),
     });
 
