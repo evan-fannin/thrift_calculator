@@ -1,5 +1,11 @@
 "use client";
 
+// filter by
+// size
+// brand
+// color
+// department -> clothing type -> subtype
+
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -111,6 +117,7 @@ export default function SearchResults() {
                   width={200}
                   height={200}
                   className="mx-auto mb-4 rounded-md"
+                  unoptimized
                 />
                 <h3 className="text-lg font-semibold text-gray-900 mb-2">
                   {result.title}
