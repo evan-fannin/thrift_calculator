@@ -1,5 +1,7 @@
 // // app/api/extract-data/route.ts
 
+import { NextResponse } from "next/server";
+
 // import { NextResponse } from "next/server";
 // import jsdom from "jsdom";
 // import puppeteer from "puppeteer";
@@ -115,3 +117,10 @@
 
 //   return itemsData;
 // }
+
+export async function GET() {
+  return NextResponse.json(
+    { error: "Failed to retrieve the Google Lens response." },
+    { status: 500 }
+  );
+}
