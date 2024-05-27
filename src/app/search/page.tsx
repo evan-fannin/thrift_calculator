@@ -6,12 +6,10 @@
 // color
 // department -> clothing type -> subtype
 
-import Image from "next/image";
 import { useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { PoshmarkResult } from "../types";
 import SummaryModal from "./SummaryModal";
-import { getDayDifference } from "./utils";
 import FancySpinner from "../components/FancySpinner";
 import PoshResult from "./PoshResult";
 import FilterControls from "./FilterControls";
@@ -29,20 +27,25 @@ export default function SearchResults() {
   const [buttonText, setButtonText] = useState("Select items to analyze");
   const [allSelected, setAllSelected] = useState(false);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
+  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
 
-  const handleFilterColorChange = useCallback((colors: string[]) => {
-    setSelectedColors(colors);
-  }, []);
+  const filteredResults = useMemo(() => {
+    let filtered = results;
 
-  const filteredResults = useMemo(
-    () =>
-      selectedColors.length === 0
-        ? results
-        : results.filter((result) =>
-            result.colors.some((color) => selectedColors.includes(color.name))
-          ),
-    [results, selectedColors]
-  );
+    if (selectedColors.length > 0) {
+      filtered = filtered.filter((result) =>
+        result.colors.some((color) => selectedColors.includes(color.name))
+      );
+    }
+
+    if (selectedSizes.length > 0) {
+      filtered = filtered.filter((result) =>
+        selectedSizes.includes(result.size)
+      );
+    }
+
+    return filtered;
+  }, [results, selectedColors, selectedSizes]);
 
   useEffect(() => {
     if (query) {
@@ -137,7 +140,10 @@ export default function SearchResults() {
           <div className="mb-8">
             <FilterControls
               results={results}
-              onColorFilterChange={handleFilterColorChange}
+              selectedColors={selectedColors}
+              setSelectedColors={setSelectedColors}
+              selectedSizes={selectedSizes}
+              setSelectedSizes={setSelectedSizes}
             />
           </div>
           <div className="mb-8">
