@@ -28,6 +28,7 @@ export default function SearchResults() {
   const [allSelected, setAllSelected] = useState(false);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
   const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+  const [filtersVisible, setFiltersVisible] = useState(false);
 
   const filteredResults = useMemo(() => {
     let filtered = results;
@@ -127,6 +128,10 @@ export default function SearchResults() {
     setShowSummarizeButton(true);
   };
 
+  const toggleFiltersVisibility = () => {
+    setFiltersVisible((prev) => !prev);
+  };
+
   return loading ? (
     <FancySpinner />
   ) : !results.length ? (
@@ -137,22 +142,36 @@ export default function SearchResults() {
     <>
       <main className="min-h-screen bg-gray-50 py-8">
         <div className="container mx-auto px-4">
-          <div className="mb-8">
-            <FilterControls
-              results={results}
-              selectedColors={selectedColors}
-              setSelectedColors={setSelectedColors}
-              selectedSizes={selectedSizes}
-              setSelectedSizes={setSelectedSizes}
-            />
-          </div>
-          <div className="mb-8">
+          <div className="mb-8 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0 sm:space-x-4">
+            <button
+              onClick={toggleFiltersVisibility}
+              className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300"
+            >
+              {filtersVisible ? "Hide Filters" : "Add Filters"}
+            </button>
             <button
               onClick={handleSelectAllClick}
               className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300"
             >
               {allSelected ? "Deselect All" : "Select All"}
             </button>
+          </div>
+          <div
+            className={`mb-8 transition-all duration-300 ${
+              filtersVisible
+                ? "max-h-screen opacity-100"
+                : "max-h-0 opacity-0 overflow-hidden"
+            }`}
+          >
+            {filtersVisible && (
+              <FilterControls
+                results={results}
+                selectedColors={selectedColors}
+                setSelectedColors={setSelectedColors}
+                selectedSizes={selectedSizes}
+                setSelectedSizes={setSelectedSizes}
+              />
+            )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             {filteredResults.map((result) => (
@@ -165,22 +184,22 @@ export default function SearchResults() {
             ))}
           </div>
         </div>
-        {showSummarizeButton && (
-          <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 sm:p-6">
-            <button
-              onClick={handleSummarizeClick}
-              className={`w-full sm:w-auto px-6 py-3 rounded-md shadow-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold transition duration-300 ${
-                selectedItems.length < 1
-                  ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
-                  : "bg-blue-500 text-white hover:bg-blue-600"
-              }`}
-              disabled={selectedItems.length < 1}
-            >
-              {buttonText}
-            </button>
-          </div>
-        )}
       </main>
+      {showSummarizeButton && (
+        <div className="fixed bottom-4 left-4 right-4 sm:bottom-8 sm:left-auto sm:right-8">
+          <button
+            onClick={handleSummarizeClick}
+            className={`w-full sm:w-auto px-6 py-3 rounded-full shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 font-semibold transition duration-300 ${
+              selectedItems.length < 1
+                ? "bg-blue-500 text-white opacity-50 cursor-not-allowed"
+                : "bg-blue-500 text-white hover:bg-blue-600"
+            }`}
+            disabled={selectedItems.length < 1}
+          >
+            {buttonText}
+          </button>
+        </div>
+      )}
       {showSummaryModal && (
         <SummaryModal
           handleCloseSummaryModal={handleCloseSummaryModal}
