@@ -1,12 +1,30 @@
 import axios from "axios";
 
-export async function getPoshmarkResults(query: string) {
+export async function getPoshmarkResults(
+  query: string,
+  filters: string | null
+) {
   const url = "https://poshmark.com/vm-rest/posts";
+
+  let colors: string[] = [];
+
+  if (filters) {
+    const filterParams = new URLSearchParams(filters);
+    const colorParam = filterParams.get("color");
+
+    if (colorParam) {
+      colors = colorParam.split(",");
+    }
+  }
+
+  console.log("colors: ", colors);
+
   const params = {
     request: JSON.stringify({
       filters: {
         department: "All",
         inventory_status: ["sold_out"],
+        ...(colors.length && { color: colors }),
       },
       query_and_facet_filters: {
         department: "All",
@@ -26,6 +44,7 @@ export async function getPoshmarkResults(query: string) {
 
   try {
     const response = await axios.get(url, { params });
+    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);

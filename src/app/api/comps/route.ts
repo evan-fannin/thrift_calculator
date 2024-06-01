@@ -28,13 +28,16 @@ interface PoshmarkAPIResult {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const query = searchParams.get("query");
+  const filters = searchParams.get("filters");
 
   if (!query) {
     return Response.json({ error: "Missing query parameter." });
   }
 
+  console.log("query: ", query, "filters: ", filters);
+
   try {
-    const data = await getPoshmarkResults(query);
+    const data = await getPoshmarkResults(query, filters);
 
     if (data.error) {
       const error: PoshmarkAPIError = data.error;

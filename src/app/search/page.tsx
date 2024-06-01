@@ -13,11 +13,11 @@ import SummaryModal from "./SummaryModal";
 import FancySpinner from "../components/FancySpinner";
 import PoshResult from "./PoshResult";
 import FilterControls from "./FilterControls";
+import { fetchPoshmarkResults } from "./client";
 
 export default function SearchResults() {
   const searchParams = useSearchParams();
-  const query = searchParams.get("query");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("query"));
   const [results, setResults] = useState<PoshmarkResult[]>([]);
   const [selectedItems, setSelectedItems] = useState<PoshmarkResult[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -27,59 +27,34 @@ export default function SearchResults() {
   const [buttonText, setButtonText] = useState("Select items to analyze");
   const [allSelected, setAllSelected] = useState(false);
   const [selectedColors, setSelectedColors] = useState<string[]>([]);
-  const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
   const [filtersVisible, setFiltersVisible] = useState(false);
 
-  const filteredResults = useMemo(() => {
-    let filtered = results;
-
-    if (selectedColors.length > 0) {
-      filtered = filtered.filter((result) =>
-        result.colors.some((color) => selectedColors.includes(color.name))
-      );
+  const fetchResults = useCallback(async () => {
+    if (!searchQuery) {
+      return;
     }
 
-    if (selectedSizes.length > 0) {
-      filtered = filtered.filter((result) =>
-        selectedSizes.includes(result.size)
-      );
+    setError(null);
+    try {
+      const data = await fetchPoshmarkResults({
+        searchQuery,
+        ...(selectedColors.length && { filters: { selectedColors } }),
+      });
+      setResults(data);
+      setLoading(false);
+    } catch (error) {
+      setError("Error fetching Poshmark results. Please try again.");
+      console.error("Error fetching Poshmark results: ", error);
     }
-
-    return filtered;
-  }, [results, selectedColors, selectedSizes]);
-
-  useEffect(() => {
-    if (query) {
-      setSearchQuery(query);
-    }
-  }, [query]);
+  }, [searchQuery, selectedColors]);
 
   useEffect(() => {
     if (!searchQuery) {
       return;
     }
 
-    async function getPoshmarkResults() {
-      setError(null);
-      try {
-        const response = await fetch(`/api/comps/?query=${searchQuery}`, {
-          cache: "force-cache",
-        });
-
-        if (!response.ok) {
-          throw new Error("Failed to fetch data");
-        }
-        const data = await response.json();
-        setResults(data.data);
-        setLoading(false);
-      } catch (error) {
-        setError("Error fetching Poshmark results. Please try again.");
-        console.error("Error fetching Poshmark results: ", error);
-      }
-    }
-
-    getPoshmarkResults();
-  }, [searchQuery]);
+    fetchResults();
+  }, [searchQuery, fetchResults]);
 
   useEffect(() => {
     if (selectedItems.length > 0) {
@@ -89,14 +64,14 @@ export default function SearchResults() {
     }
 
     const filteredSelectedItems = selectedItems.filter((item) =>
-      filteredResults.some((result) => result.id === item.id)
+      results.some((result) => result.id === item.id)
     );
 
     if (filteredSelectedItems.length !== selectedItems.length) {
       setSelectedItems(filteredSelectedItems);
       setAllSelected(false);
     }
-  }, [selectedItems, filteredResults]);
+  }, [selectedItems, results]);
 
   const handleItemClick = (item: PoshmarkResult) => {
     if (selectedItems.some((selectedItem) => selectedItem.id === item.id)) {
@@ -113,7 +88,7 @@ export default function SearchResults() {
       setSelectedItems([]);
       setAllSelected(false);
     } else {
-      setSelectedItems([...filteredResults]);
+      setSelectedItems([...results]);
       setAllSelected(true);
     }
   };
@@ -147,13 +122,13 @@ export default function SearchResults() {
               onClick={toggleFiltersVisibility}
               className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300"
             >
-              {filtersVisible ? "Hide Filters" : "Add Filters"}
+              {filtersVisible ? "Close filters" : "Add filters"}
             </button>
             <button
               onClick={handleSelectAllClick}
               className="w-full sm:w-auto px-6 py-3 bg-blue-500 text-white rounded-md shadow-md hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition duration-300"
             >
-              {allSelected ? "Deselect All" : "Select All"}
+              {allSelected ? "Deselect all" : "Select all"}
             </button>
           </div>
           <div
@@ -168,13 +143,12 @@ export default function SearchResults() {
                 results={results}
                 selectedColors={selectedColors}
                 setSelectedColors={setSelectedColors}
-                selectedSizes={selectedSizes}
-                setSelectedSizes={setSelectedSizes}
+                toggleFiltersVisibility={toggleFiltersVisibility}
               />
             )}
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
-            {filteredResults.map((result) => (
+            {results.map((result) => (
               <PoshResult
                 key={result.id}
                 result={result}
