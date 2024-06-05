@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getPoshmarkResults } from "../../lib/getPoshmarkResults";
+import { getPoshmarkResults } from "../../../lib/getPoshmarkResults";
 import { ColorObject } from "@/app/types";
 
 interface PoshmarkAPIError {

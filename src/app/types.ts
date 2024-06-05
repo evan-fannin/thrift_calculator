@@ -31,3 +31,13 @@ export interface PoshmarkResult {
   soldAt: string;
   colors: ColorObject[];
 }
+
+export interface EbayResultType {
+  title: string;
+  imageUrl: string;
+  salePrice: string;
+  shippingPrice: string;
+  shippingDiscount: string;
+  soldAt: string;
+  id: string;
+}

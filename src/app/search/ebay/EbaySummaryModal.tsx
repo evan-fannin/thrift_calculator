@@ -1,32 +1,26 @@
 import { useEffect, useState } from "react";
-import { PoshmarkResult } from "../types";
-import { getDayDifference } from "./utils";
+import { EbayResultType } from "../../types";
+import { getDayDifference } from "../utils";
 
 export default function SummaryModal({
   selectedItems,
   handleCloseSummaryModal,
 }: {
-  selectedItems: PoshmarkResult[];
+  selectedItems: EbayResultType[];
   handleCloseSummaryModal: () => void;
 }) {
-  const calculateAverageDaysOnMarket = () => {
-    const totalDays = selectedItems.reduce((sum, item) => {
-      const daysOnMarket = getDayDifference(item.postedAt, item.soldAt);
-      return sum + daysOnMarket;
-    }, 0);
-    return (totalDays / selectedItems.length).toFixed(2);
-  };
-
   const calculateAveragePrice = () => {
     const totalPrice = selectedItems.reduce((sum, item) => {
-      const price = parseFloat(item.price);
+      const price = parseFloat(item.salePrice.substring(1));
+      console.log(price);
       return sum + price;
     }, 0);
     return (totalPrice / selectedItems.length).toFixed(2);
   };
 
   const calculatePlatformFee = (salePrice: number) => {
-    return salePrice < 15 ? 2.95 : salePrice * 0.2;
+    const feeOfTotalAmount = salePrice * 0.1325;
+    return salePrice <= 10 ? feeOfTotalAmount + 0.3 : feeOfTotalAmount + 0.4;
   };
 
   const calculateProfit = (salePrice: number, costOfGoods: number) => {
@@ -85,12 +79,6 @@ export default function SummaryModal({
           <div>
             <p className="text-gray-600 mb-2">Average Price:</p>
             <p className="text-lg font-semibold">${averagePrice}</p>
-          </div>
-          <div>
-            <p className="text-gray-600 mb-2">Average Days on Market:</p>
-            <p className="text-lg font-semibold">
-              {calculateAverageDaysOnMarket()}
-            </p>
           </div>
         </div>
         <div className="mb-6">

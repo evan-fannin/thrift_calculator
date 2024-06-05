@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { PoshmarkResult } from "../types";
+import { EbayResultType, PoshmarkResult } from "../types";
 
 interface FilterControlsProps {
-  results: PoshmarkResult[];
+  results: PoshmarkResult[] | EbayResultType[];
   selectedColors: string[];
   setSelectedColors: (selectedColors: string[]) => void;
   toggleFiltersVisibility: () => void;
@@ -33,9 +33,9 @@ export default function FilterControls({
     "White",
   ];
 
-  const uniqueSizes = Array.from(
-    new Set(results.map((result) => result.size).filter((x) => x))
-  );
+  // const uniqueSizes = Array.from(
+  //   new Set(results.map((result) => result.size).filter((x) => x))
+  // );
 
   const handleColorChange = (color: string) => {
     const updatedColors = localSelectedColors.includes(color)

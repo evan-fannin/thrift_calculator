@@ -17,8 +17,6 @@ export async function getPoshmarkResults(
     }
   }
 
-  console.log("colors: ", colors);
-
   const params = {
     request: JSON.stringify({
       filters: {
@@ -44,7 +42,6 @@ export async function getPoshmarkResults(
 
   try {
     const response = await axios.get(url, { params });
-    console.log(response);
     return response.data;
   } catch (error) {
     console.error("Error fetching data:", error);

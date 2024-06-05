@@ -1,6 +1,6 @@
 import Image from "next/image";
-import { PoshmarkResult } from "../types";
-import { getDayDifference } from "./utils";
+import { PoshmarkResult } from "../../types";
+import { getDayDifference } from "../utils";
 
 export default function PoshResult({
   result,
@@ -11,7 +11,6 @@ export default function PoshResult({
   selectedItems: PoshmarkResult[];
   handleItemClick: (result: PoshmarkResult) => void;
 }) {
-  console.log(result);
   return (
     <div
       key={result.id}
